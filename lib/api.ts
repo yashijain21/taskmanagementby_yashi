@@ -9,11 +9,19 @@ if (!API_URL) {
   throw new Error("NEXT_PUBLIC_API_URL is not set");
 }
 
+const normalizeBaseUrl = (url: string): string => url.replace(/\/+$/, "");
+
+const buildApiUrl = (path: string): string => {
+  const base = normalizeBaseUrl(API_URL);
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `${base}${normalizedPath}`;
+};
+
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { accessToken, onUnauthorized, headers, ...rest } = options;
 
   const makeCall = async (token: string | null | undefined): Promise<Response> => {
-    return fetch(`${API_URL}${path}`, {
+    return fetch(buildApiUrl(path), {
       ...rest,
       credentials: "include",
       headers: {
